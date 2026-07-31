@@ -40,6 +40,10 @@ create policy "own categories" on public.categories for all using (auth.uid() = 
 create policy "own products" on public.products for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 create policy "own records" on public.inventory_records for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
+-- RLS 负责“只能看自己的数据”；下面的权限允许已登录用户通过 API 使用这些表。
+grant usage on schema public to authenticated;
+grant select, insert, update, delete on table public.categories, public.products, public.inventory_records to authenticated;
+
 create or replace function public.adjust_inventory(p_product_id uuid, p_action text, p_value integer, p_notes text default '')
 returns public.products language plpgsql security invoker as $$
 declare p public.products; after_qty integer; change_qty integer;
@@ -56,3 +60,5 @@ begin
   values (p.id, p_action, change_qty, p.quantity - change_qty, after_qty, coalesce(p_notes,''));
   return p;
 end; $$;
+
+grant execute on function public.adjust_inventory(uuid, text, integer, text) to authenticated;
