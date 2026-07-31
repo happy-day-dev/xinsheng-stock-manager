@@ -1,3 +1,4 @@
+# 每次推送都创建独立的 Pages 构建产物；避免重试旧运行时出现同名产物冲突。
 name: Deploy to GitHub Pages
 
 on:
